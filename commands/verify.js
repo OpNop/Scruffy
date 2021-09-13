@@ -1,13 +1,14 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 // eslint-disable-next-line no-unused-vars
 const { MessageEmbed, Interaction } = require('discord.js');
+const { welcome_room, log_room } = require('../config.json');
 const logger = require('../classes/Log');
 const Api = require('../classes/Api');
 const keyFormat = /([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{20}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})/;
 
-const linkSuccess = (user, account) => {
+const linkSuccess = (user, account, key) => {
 	return new MessageEmbed()
-		.setDescription(`✅ Successfully linked ${user} to \`${account}\``)
+		.setDescription(`✅ Successfully linked ${user} to \`${account}\` \nUsing key: \`${key}\``)
 		.setColor(8311585);
 };
 
@@ -34,7 +35,7 @@ const doStart = async (interaction) => {
 const doAddKey = async (interaction) => {
 
 	// Set Defer for long tasks
-	await interaction.deferReply();
+	await interaction.deferReply({ ephemeral: true });
 
 	const key = interaction.options.getString('key');
 	const user = interaction.user;
@@ -68,7 +69,9 @@ const doAddKey = async (interaction) => {
 				// Set Role
 				await member.roles.add(role);
 				logger.Log(`Linked: ${user.tag} to ${account}`);
-				interaction.followUp({ embeds: [linkSuccess(user, account)] });
+				interaction.followUp({ embeds: [linkSuccess(user, account, key)], ephemeral: true });
+				interaction.client.channels.cache.get(log_room).send({ embeds: [linkSuccess(user, account, key)] });
+				interaction.client.channels.cache.get(welcome_room).send(`Welcome to yellow name ${user}!!!!`);
 			} else {
 				logger.Error(`Error during Api.tiny.addKey for user ${user}`);
 				interaction.followUp({ content: 'Error Linking', ephemeral: true });
