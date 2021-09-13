@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 // eslint-disable-next-line no-unused-vars
 const { MessageEmbed, Interaction } = require('discord.js');
 const logger = require('../classes/Log');
-const Api = require('../Classes/Api');
+const Api = require('../classes/Api');
 const keyFormat = /([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{20}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})/;
 
 const linkSuccess = (user, account) => {
