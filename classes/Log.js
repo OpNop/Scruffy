@@ -2,7 +2,7 @@
 const colors = require('colors');
 const fs = require('fs');
 
-const log_file = fs.createWriteStream(process.cwd() + '/debug.log', { flags : 'w' });
+const log_file = fs.createWriteStream(process.cwd() + '/debug.log', { flags : 'a' });
 
 const formatMessage = (type, message) => {
 	const output = `[${type.toUpperCase()}](${new Date(Date.now()).toLocaleTimeString([], {
