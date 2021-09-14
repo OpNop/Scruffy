@@ -11,11 +11,11 @@ module.exports = {
 	* @param {Message} message
 	*/
 	execute(message) {
-		const roles = message.member.roles.cache.map(r => r.name).join(', ');
+		// const roles = message.member.roles.cache.map(r => r.name).join(', ');
 		const attachments = message.attachments.size > 0 ? message.attachments.first().url : '';
-		const chat = `${message.createdAt.toISOString()}, ${message.author.tag}, "${roles}", ${message.channel.name}, ${message.cleanContent}, ${attachments}`;
+		const chat = `${message.createdAt.toISOString()}, ${message.author.tag}, ${message.channel.name}, ${message.cleanContent}, ${attachments}`;
 
 		chatLog.write(chat + '\n');
-		console.log(chat);
+		// console.log(chat);
 	},
 };
