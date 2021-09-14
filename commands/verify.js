@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 // eslint-disable-next-line no-unused-vars
 const { MessageEmbed, Interaction } = require('discord.js');
-const { welcome_room, log_room } = require('../config.json');
+const { welcome_room, log_room, member_role, guilds } = require('../config.json');
 const logger = require('../classes/Log');
 const Api = require('../classes/Api');
 const keyFormat = /([A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{20}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12})/;
@@ -40,7 +40,6 @@ const doAddKey = async (interaction) => {
 	const key = interaction.options.getString('key');
 	const user = interaction.user;
 	const member = interaction.guild.members.cache.get(user.id);
-	const role = interaction.guild.roles.cache.find((r) => r.name == 'Member');
 
 	// Check key length and format
 	if (key.length != 72 && keyFormat.test(key) == false) {
@@ -62,15 +61,23 @@ const doAddKey = async (interaction) => {
 		// Valid perms
 		// Get Account
 		const account = await Api.gw2.getAccount(key);
+
+		// Validate that they are in a TINY guild
+		if (isInGuild(account) === false) {
+			// Non guild member
+			interaction.followUp('🚨 Bookah Alert!! 🚨\n\nYou are not a [TINY] member!\n\nIf you really are, try again in a little bit or let us know there is an issue.');
+			return;
+		}
+
 		// Link discord
-		if (await Api.tiny.addDiscord(account, user.id)) {
+		if (await Api.tiny.addDiscord(account.name, user.id)) {
 			// Save Key
-			if (await Api.tiny.addKey(account, key)) {
-				// Set Role
-				await member.roles.add(role);
-				logger.Log(`Linked: ${user.tag} to ${account}`);
-				interaction.followUp({ embeds: [linkSuccess(user, account, key)], ephemeral: true });
-				interaction.client.channels.cache.get(log_room).send({ embeds: [linkSuccess(user, account, key)] });
+			if (await Api.tiny.addKey(account.name, key)) {
+				// Set roles
+				await setRoles(account, member);
+				logger.Log(`Linked: ${user.tag} to ${account.name}`);
+				interaction.followUp({ embeds: [linkSuccess(user, account.name, key)], ephemeral: true });
+				interaction.client.channels.cache.get(log_room).send({ embeds: [linkSuccess(user, account.name, key)] });
 				interaction.client.channels.cache.get(welcome_room).send(`Welcome to yellow name ${user}!!!!`);
 			} else {
 				logger.Error(`Error during Api.tiny.addKey for user ${user}`);
@@ -86,6 +93,27 @@ const doAddKey = async (interaction) => {
 			content: 'Your API key needs to include `characters` permission',
 			ephemeral: true,
 		});
+	}
+};
+
+const isInGuild = (account) => {
+	for (const guild of guilds) {
+		if (account.guilds.includes(guild.id)) {
+			return true;
+		}
+	}
+	return false;
+};
+
+const setRoles = async (account, member) => {
+	// Give main Member Role
+	await member.roles.add(member_role);
+
+	// Apply guild Rols
+	for (const guild of guilds) {
+		if (account.guilds.includes(guild.id)) {
+			await member.roles.add(guild.role);
+		}
 	}
 };
 
