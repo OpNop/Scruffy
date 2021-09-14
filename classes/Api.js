@@ -94,7 +94,7 @@ module.exports = {
 		async getAccount(key) {
 			try {
 				const account = await gw2Api.get('account', auth(key));
-				return account.data.name;
+				return account.data;
 			} catch (error) {
 				Logger.Error(JSON.stringify(error, null, 2));
 				return false;
